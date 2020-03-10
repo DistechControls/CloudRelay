@@ -1,0 +1,156 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "0.0.0.0",
+  "parameters": {
+    "iotHubName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Azure IoT Hub acting as a gateway to communicate with the devices"
+      }
+    },
+    "iotHubSkuName": {
+      "type": "string",
+      "defaultValue": "S1",
+      "allowedValues": [
+        // No Basic tier as it does not support direct method and C2D messaging
+        "F1",
+        "S1",
+        "S2",
+        "S3"
+      ],
+      "metadata": {
+        "description": "The name of the SKU of the IoT Hub"
+      }
+    },
+    "iotHubCapacityUnits": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      // maxValue not handled as it is a dynamic limit based on SKU
+      "metadata": {
+        "description": "The number of of provisioned IoT Hub units"
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of storage account resource containing blobs shared through the IoT Hub with devices"
+      }
+    },
+    "deviceToCloudFileContainerName": {
+      "type": "string",
+      "defaultValue": "iothub-fileupload",
+      "minLength": 3,
+      "maxLength": 63,
+      "metadata": {
+        "description": "The name of the container used by the IoT Hub to provide blobs to devices in order to save responses exceeding payload limit"
+      }
+    },
+    "cloudToDeviceFileContainerName": {
+      "type": "string",
+      "defaultValue": "cloud-relay-fileupload",
+      "minLength": 3,
+      "maxLength": 63,
+      "metadata": {
+        "description": "The name of the container used by the Relay API to save request exceeding payload limit as blob for the destination device"
+      }
+    },
+    "scheduledCallsConsumerGroupName": {
+      "type": "string",
+      "defaultValue": "scheduled-calls",
+      "minLength": 1,
+      "maxLength": 50,
+      "metadata": {
+        "description": "The name of the default consumer group created for the IoT Hub built-in events endpoint"
+      }
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "name": "[parameters('storageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-04-01",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+      },
+      "resources": [
+        {
+          "name": "[concat('default/', parameters('deviceToCloudFileContainerName'))]",
+          "type": "blobServices/containers",
+          "apiVersion": "2019-04-01",
+          "dependsOn": [
+            "[parameters('storageAccountName')]"
+          ]
+        },
+        {
+          "name": "[concat('default/', parameters('cloudToDeviceFileContainerName'))]",
+          "type": "blobServices/containers",
+          "apiVersion": "2019-04-01",
+          "dependsOn": [
+            "[parameters('storageAccountName')]"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "[parameters('iotHubName')]",
+      "type": "Microsoft.Devices/IotHubs",
+      "apiVersion": "2019-03-22",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+      ],
+      "sku": {
+        "name": "[parameters('iotHubSkuName')]",
+        "capacity": "[parameters('iotHubCapacityUnits')]"
+      },
+      "properties": {
+        "storageEndpoints": {
+          "$default": {
+            "connectionString": "[dc.getStorageAccountConnectionString(parameters('storageAccountName'), listKeys(parameters('storageAccountName'), '2019-04-01').keys[0].value)]",
+            "containerName": "[parameters('deviceToCloudFileContainerName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "[concat(parameters('iotHubName'), '/events/', parameters('scheduledCallsConsumerGroupName'))]",
+      "type": "Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups",
+      "apiVersion": "2019-03-22",
+      "dependsOn": [
+        "[resourceId('Microsoft.Devices/IotHubs', parameters('iotHubName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+  },
+  "functions": [
+    {
+      "namespace": "dc",
+      "members": {
+        "getStorageAccountConnectionString": {
+          "parameters": [
+            {
+              "type": "string",
+              "name": "accountName"
+            },
+            {
+              "type": "string",
+              "name": "keyValue"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('accountName'), ';AccountKey=', parameters('keyValue'), ';EndpointSuffix=core.windows.net')]"
+          }
+        }
+      }
+    }
+  ]
+}

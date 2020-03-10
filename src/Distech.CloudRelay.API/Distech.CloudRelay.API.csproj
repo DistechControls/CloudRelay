@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+
+    <IsPackable>true</IsPackable> 
+    <PackageId>Distech.CloudRelay.API</PackageId>
+    <PackageDescription>Distech Relay API to access Eclypse controller Rest API through Azure IoT Hub</PackageDescription>
+    <IncludeContentInPack>false</IncludeContentInPack>
+    <UserSecretsId>229149df-50e6-4fd0-ac9e-7d4f2855869c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.7.1" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.18.1" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Distech.CloudRelay.Common\Distech.CloudRelay.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
+</Project>
