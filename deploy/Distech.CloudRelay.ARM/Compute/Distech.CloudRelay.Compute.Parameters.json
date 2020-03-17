@@ -4,12 +4,6 @@
   "parameters": {
     "iotHubResourceGroupName": {
       "value": "rg-cloudrelaygateway"
-    },
-    "iotHubName": {
-      "value": "iot-cloudrelay"
-    },
-    "iotHubStorageAccountName": {
-      "value": "stcloudrelaygwdata001"
     }
   }
 }

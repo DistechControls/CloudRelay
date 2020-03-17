@@ -8,7 +8,7 @@
       "minLength": 36,
       "maxLength": 36,
       "metadata": {
-        "description": "The tenant ID of the AzureAD directory used to authenticate Cloud Relay requests"
+        "description": "The tenant ID of the Azure Active Directory used to authenticate Cloud Relay requests."
       }
     },
     "azureAdClientId": {
@@ -17,73 +17,88 @@
       "minLength": 36,
       "maxLength": 36,
       "metadata": {
-        "description": "The client ID of the Cloud Relay app registration in the AzureAD directory used to authenticate Cloud Relay requests"
+        "description": "The client ID of the Cloud Relay app registration in the Azure Active Directory used to authenticate Cloud Relay requests."
       }
     },
     "iotHubResourceGroupName": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 90,
       "metadata": {
-        "description": "The name of the resource group containing the IoT Hub resource used to communicate with devices"
+        "description": "The name of the resource group containing the IoT Hub resource used to communicate with devices. The name can contain alphanumeric characters, periods, underscores, hyphens and parenthesis."
       }
     },
     "iotHubName": {
       "type": "string",
+      "minLength": 3,
+      "maxLength": 50,
       "metadata": {
-        "description": "The name of the IoT Hub resource used to communicate with devices"
+        "description": "The name of the IoT Hub resource used to communicate with devices."
       }
     },
     "iotHubStorageAccountResourceGroupName": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 90,
       "defaultValue": "[parameters('iotHubResourceGroupName')]",
       "metadata": {
-        "description": "The name of the resource group containing the storage account resource"
+        "description": "The name of the resource group containing the IoT Hub storage account resource. The name can contain alphanumeric characters, periods, underscores, hyphens and parenthesis."
       }
     },
     "iotHubStorageAccountName": {
       "type": "string",
+      "minLength": 3,
+      "maxLength": 24,
       "metadata": {
-        "description": "The name of storage account resource containing blobs shared through the IoT Hub with devices"
+        "description": "The name of the storage account resource containing blobs shared through the IoT Hub with devices."
       }
     },
     "iotHubServicePolicyName": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
       "defaultValue": "service",
       "metadata": {
-        "description": "The name of the policy granting 'service connect' permission of the IoT Hub to the Relay API"
+        "description": "The name of the policy granting 'service connect' permission of the IoT Hub to the Cloud Relay."
       }
     },
     "cloudToDeviceFileContainerName": {
       "type": "string",
+      "minLength": 3,
+      "maxLength": 63,
       "defaultValue": "cloud-relay-fileupload",
-      "minLength": 1,
       "metadata": {
-        "description": "The name of the container used by the Relay API to save request exceeding payload limit as blob for the destination device"
+        "description": "The name of the container used by the Cloud Relay to save request exceeding payload limit as blob for the destination device. The name can contain lowercase letters, numbers and hyphens."
       }
     },
     "applicationInsightsKey": {
       "type": "string",
       "defaultValue": "",
       "metadata": {
-        "description": "Key of an existing application insights to connect to. If left empty, a new application insight will be created in current resource group instead"
+        "description": "Key of an existing application insights to connect to. If left empty, a new application insight will be created in current resource group instead."
       }
     },
     "applicationInsightsName": {
       "type": "string",
+      "maxLength": 255,
       "metadata": {
-        "description": "The name of the application insights to deploy as part of the relay API. No resource will be created if 'applicationInsightsKey' was set instead"
+        "description": "The name of the application insights to deploy as part of the Cloud Relay. The name can contain alphanumeric characters, periods, underscores, hyphens and parenthesis. No resource will be created if 'applicationInsightsKey' was set instead."
       }
     },
     "hostingPlanResourceGroupName": {
       "type": "string",
+      "maxLength": 90,
       "defaultValue": "",
       "metadata": {
-        "description": "If set, the name of the resource group containing the hosting plan to reuse for the Relay API. If let empty, a new hosting plan will be created in current resource group instead"
+        "description": "If set, the name of the resource group containing the hosting plan to reuse for the Cloud Relay. If let empty, a new hosting plan will be created in current resource group instead."
       }
     },
     "hostingPlanName": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
       "metadata": {
-        "description": "The name of the hosting plan for the Relay API. No resource will be created if 'hostingPlanResourceGroupName' was also set"
+        "description": "The name of the hosting plan for the Cloud Relay. The name can contain alphanumeric characters and hyphens. No resource will be created if 'hostingPlanResourceGroupName' was also set."
       }
     },
     "hostingPlanSkuName": {
@@ -106,26 +121,34 @@
     },
     "webSiteName": {
       "type": "string",
+      "minLength": 2,
+      "maxLength": 60,
       "metadata": {
-        "description": "The name of the wep app hosting the Relay API"
+        "description": "The name of the wep app hosting the Cloud Relay. The name can contain alphanumeric characters and hyphens."
       }
     },
     "consumptionHostingPlanName": {
       "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
       "metadata": {
-        "description": "The name of the consumption plan used to run Azure Functions related to the Relay API"
+        "description": "The name of the consumption plan used to run Azure Functions related to the Cloud Relay. The name can contain alphanumeric characters, underscores and hyphens."
       }
     },
     "functionAppName": {
       "type": "string",
+      "minLength": 2,
+      "maxLength": 60,
       "metadata": {
-        "description": "The name of the function app running Azure Functions related to the Relay API"
+        "description": "The name of the function app running Azure Functions related to the Cloud Relay. The name can contain alphanumeric characters only."
       }
     },
-    "storageAccountName": {
+    "functionAppStorageAccountName": {
       "type": "string",
+      "minLength": 3,
+      "maxLength": 24,
       "metadata": {
-        "description": "The name of the storage account associated to the function app"
+        "description": "The name of the storage account associated to the function app. The name can contain lowercase letters and numbers."
       }
     }
   },
@@ -137,21 +160,21 @@
   },
   "resources": [
     {
-        "name": "[parameters('storageAccountName')]",
-        "type": "Microsoft.Storage/storageAccounts",
-        "apiVersion": "2019-04-01",
-        "location": "[resourceGroup().location]",
-        "tags": {
-            "displayName": "Storage account"
-        },
-        "sku": {
-          "name": "Standard_LRS"
-        },
-        "kind": "StorageV2",
-        "properties": {
-            "accessTier": "Hot",
-            "supportsHttpsTrafficOnly": true
-        }
+      "name": "[parameters('functionAppStorageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-04-01",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "Storage account"
+      },
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "accessTier": "Hot",
+        "supportsHttpsTrafficOnly": true
+      }
     },
     {
       "name": "[parameters('hostingPlanName')]",
@@ -335,7 +358,7 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', parameters('consumptionHostingPlanName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('functionAppStorageAccountName'))]"
       ],
       "kind": "functionapp",
       "properties": {
@@ -344,15 +367,15 @@
           "appSettings": [
             {
               "name": "AzureWebJobsDashboard",
-              "value": "[dc.getStorageAccountConnectionString(parameters('storageAccountName'), listKeys(parameters('storageAccountName'), '2019-04-01').keys[0].value)]"
+              "value": "[dc.getStorageAccountConnectionString(parameters('functionAppStorageAccountName'), listKeys(parameters('functionAppStorageAccountName'), '2019-04-01').keys[0].value)]"
             },
             {
               "name": "AzureWebJobsStorage",
-              "value": "[dc.getStorageAccountConnectionString(parameters('storageAccountName'), listKeys(parameters('storageAccountName'), '2019-04-01').keys[0].value)]"
+              "value": "[dc.getStorageAccountConnectionString(parameters('functionAppStorageAccountName'), listKeys(parameters('functionAppStorageAccountName'), '2019-04-01').keys[0].value)]"
             },
             {
               "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-              "value": "[dc.getStorageAccountConnectionString(parameters('storageAccountName'), listKeys(parameters('storageAccountName'), '2019-04-01').keys[0].value)]"
+              "value": "[dc.getStorageAccountConnectionString(parameters('functionAppStorageAccountName'), listKeys(parameters('functionAppStorageAccountName'), '2019-04-01').keys[0].value)]"
             },
             {
               "name": "WEBSITE_CONTENTSHARE",
