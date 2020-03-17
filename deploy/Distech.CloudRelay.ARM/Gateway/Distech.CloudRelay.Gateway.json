@@ -4,8 +4,10 @@
   "parameters": {
     "iotHubName": {
       "type": "string",
+      "minLength": 3,
+      "maxLength": 50,
       "metadata": {
-        "description": "The name of the Azure IoT Hub acting as a gateway to communicate with the devices"
+        "description": "The name of the Azure IoT Hub acting as a gateway to communicate with the devices. The name can contain alphanumeric characters and hyphens."
       }
     },
     "iotHubSkuName": {
@@ -19,7 +21,7 @@
         "S3"
       ],
       "metadata": {
-        "description": "The name of the SKU of the IoT Hub"
+        "description": "The name of the SKU of the IoT Hub."
       }
     },
     "iotHubCapacityUnits": {
@@ -28,13 +30,15 @@
       "minValue": 1,
       // maxValue not handled as it is a dynamic limit based on SKU
       "metadata": {
-        "description": "The number of of provisioned IoT Hub units"
+        "description": "The number of of provisioned IoT Hub units."
       }
     },
     "storageAccountName": {
       "type": "string",
+      "minLength": 3,
+      "maxLength": 24,
       "metadata": {
-        "description": "The name of storage account resource containing blobs shared through the IoT Hub with devices"
+        "description": "The name of storage account resource containing blobs shared through the IoT Hub with devices. The name can contain lowercase letters and numbers."
       }
     },
     "deviceToCloudFileContainerName": {
@@ -43,7 +47,7 @@
       "minLength": 3,
       "maxLength": 63,
       "metadata": {
-        "description": "The name of the container used by the IoT Hub to provide blobs to devices in order to save responses exceeding payload limit"
+        "description": "The name of the container used by the IoT Hub to provide blobs to devices in order to save responses exceeding payload limit. The name can contain lowercase letters, numbers and hyphens."
       }
     },
     "cloudToDeviceFileContainerName": {
@@ -52,7 +56,7 @@
       "minLength": 3,
       "maxLength": 63,
       "metadata": {
-        "description": "The name of the container used by the Relay API to save request exceeding payload limit as blob for the destination device"
+        "description": "The name of the container used by the Relay API to save request exceeding payload limit as blob for the destination device. The name can contain lowercase letters, numbers and hyphens."
       }
     },
     "scheduledCallsConsumerGroupName": {
@@ -61,7 +65,7 @@
       "minLength": 1,
       "maxLength": 50,
       "metadata": {
-        "description": "The name of the default consumer group created for the IoT Hub built-in events endpoint"
+        "description": "The name of the consumer group created for the IoT Hub built-in events endpoint. The name can contain alphanumeric characters, periods, underscores and hyphens."
       }
     }
   },
