@@ -30,7 +30,7 @@
       "minValue": 1,
       // maxValue not handled as it is a dynamic limit based on SKU
       "metadata": {
-        "description": "The number of of provisioned IoT Hub units."
+        "description": "The number of provisioned IoT Hub units."
       }
     },
     "storageAccountName": {
