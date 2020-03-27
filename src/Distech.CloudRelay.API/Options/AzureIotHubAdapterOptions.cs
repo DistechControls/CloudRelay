@@ -25,6 +25,9 @@ namespace Distech.CloudRelay.API.Options
         /// </summary>
         public int ResponseTimeout { get; set; }
 
-        
+        /// <summary>
+        /// Gets or sets the size in bytes above which the message is buffered to blob storage.
+        /// </summary>
+        public int MessageSizeThreshold { get; set; }
     }
 }

@@ -57,8 +57,8 @@ namespace Distech.CloudRelay.API.Services
                 return new DeviceInlineRequest(request);
 
             // determine whether the request body needs to be written to file storage or sent inline to the device.
-            // check should be done based on serialized request body instead of the current request.ContentLength since additional info is added to the payload later on.
-            // that still would not be perfectly accurate since the SDK adds its own data to the final payload, so we simply use a more conservative limit for now.
+            // a more accurate check could be done against the serialized DeviceRequest instead of the current request.ContentLength since additional info is added to the payload later on.
+            // that would still not be perfectly accurate since the SDK adds its own data to the final payload.
             if (request.HasFormContentType || request.ContentLength.GetValueOrDefault() > m_DeviceCommunicationAdapter.GetMaximumMessageSize())
             {
                 var fileData = new BlobStreamDecorator(request.Body) { ContentType = request.ContentType };
