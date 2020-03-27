@@ -243,7 +243,8 @@
             "Authentication__AzureAD__ClientId": "[parameters('azureAdClientId')]",
 
             "DeviceCommunication__IoTHub__MethodName": "RestApi",
-            "DeviceCommunication__IoTHub__ResponseTimeout": "30",
+            "DeviceCommunication__IoTHub__ResponseTimeout": 30,
+            "DeviceCommunication__IoTHub__MessageSizeThreshold": 16384,
 
             "FileStorage__DeviceFileUploadFolder": "[reference(variables('iotHubResourceId'), '2018-04-01').storageEndpoints.$default.containerName]",
             "FileStorage__ServerFileUploadFolder": "[parameters('cloudToDeviceFileContainerName')]"
