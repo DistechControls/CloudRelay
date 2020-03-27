@@ -16,7 +16,6 @@ namespace Distech.CloudRelay.API.Services
     {
         #region Constants
 
-        private const int DirectMethodPayloadSizeLimit = 120 * 1024;
         private const int DirectMethodMinResponseTimeout = 5;
         private const int DirectMethodMaxResponseTimeout = 300;
 
@@ -80,12 +79,13 @@ namespace Distech.CloudRelay.API.Services
         }
 
         /// <summary>
-        /// Returns the maximum message size supported by the communication layer.
+        /// Returns the maximum message size.
+        /// Any message with a size above this limit can either be rejected or buffered to workaround the limitation.
         /// </summary>
         /// <returns></returns>
         public int GetMaximumMessageSize()
         {
-            return DirectMethodPayloadSizeLimit;
+            return m_Options.Value.MessageSizeThreshold;
         }
 
         #endregion

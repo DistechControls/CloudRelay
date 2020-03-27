@@ -20,7 +20,8 @@ namespace Distech.CloudRelay.API.Services
         Task<InvocationResult> InvokeCommandAsync(string deviceId, string jsonPayload);
 
         /// <summary>
-        /// Returns the maximum message size supported by the communication layer.
+        /// Returns the maximum message size.
+        /// Any message with a size above this limit can either be rejected or buffered to workaround the limitation.
         /// </summary>
         /// <returns></returns>
         int GetMaximumMessageSize();
