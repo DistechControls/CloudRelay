@@ -50,7 +50,7 @@ Take note of both application registrations `appId` and provided `password`. The
 
 ### Resources Deployment
 
-Azure resources are deployed using the Azure Resource Manager (ARM) templates supplied in asset `relay-arm.zip`. For more information about ARM templates and deployment best practices (CI/CD), see the [Azure Resource Manager template](https://docs.microsoft.com/azure/azure-resource-manager/templates/) documentation.
+Azure resources are deployed using the Azure Resource Manager (ARM) templates supplied in asset [relay-arm.zip](https://github.com/DistechControls/CloudRelay/releases/latest). For more information about ARM templates and deployment best practices (CI/CD), see the [Azure Resource Manager template](https://docs.microsoft.com/azure/azure-resource-manager/templates/) documentation.
 
 #### Gateway Resources
 
@@ -101,7 +101,7 @@ az group deployment create `
 
 Code deployment consists of pushing compiled code into previously deployed compute resources.
 
-Deploy the `Distech.CloudRelay.API.zip` and `Distech.CloudRelay.Functions.zip` code assets.
+Deploy the [Distech.CloudRelay.API.zip](https://github.com/DistechControls/CloudRelay/releases/latest) and [Distech.CloudRelay.Functions.zip](https://github.com/DistechControls/CloudRelay/releases/latest) code assets.
 
 ```PowerShell
 az webapp deployment source config-zip `
