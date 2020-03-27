@@ -132,6 +132,7 @@ Here's the list of all configurations supported by the applications. Required co
 - `APPINSIGHTS_INSTRUMENTATIONKEY`: The instrumentation key of the Azure Application Insights used for monitoring. 
 - `DeviceCommunication__IoTHub__MethodName`: The Azure IoT Hub DirectMethod name that will be invoked by the API.
 - `DeviceCommunication__IoTHub__ResponseTimeout`: The number of seconds to wait for a response from a DirectMethod invocation. This value can be overriden on a per request basis using the `responseTimeout` URL query string parameter.
+- `DeviceCommunication__IoTHub__MessageSizeThreshold`: The size in bytes above which messages are buffered to file storage prior to being forwarded to the device.
 - `FileStorage__DeviceFileUploadFolder`: The Azure storage account container name where devices will upload their files.
 - `FileStorage__ServerFileUploadFolder`: The Azure storage account container name where the API will upload its files.
 
