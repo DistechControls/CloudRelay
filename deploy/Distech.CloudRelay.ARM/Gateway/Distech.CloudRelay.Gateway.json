@@ -14,7 +14,6 @@
       "type": "string",
       "defaultValue": "S1",
       "allowedValues": [
-        // No Basic tier as it does not support direct method and C2D messaging
         "F1",
         "S1",
         "S2",
@@ -28,7 +27,6 @@
       "type": "int",
       "defaultValue": 1,
       "minValue": 1,
-      // maxValue not handled as it is a dynamic limit based on SKU
       "metadata": {
         "description": "The number of provisioned IoT Hub units."
       }
