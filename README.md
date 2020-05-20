@@ -75,7 +75,7 @@ az group deployment create `
   --parameters Distech.CloudRelay.Gateway.Parameters.json
 ```
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FDistechControls%2FCloudRelay%2Fmaster%2Fdeploy%2FDistech.CloudRelay.ARM%2FGateway%2FDistech.CloudRelay.Gateway.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/DistechControls/CloudRelay/features/deploy-to-azure/deploy/Distech.CloudRelay.ARM/Gateway/Distech.CloudRelay.Gateway.json)
 
 #### Compute Resources
 
