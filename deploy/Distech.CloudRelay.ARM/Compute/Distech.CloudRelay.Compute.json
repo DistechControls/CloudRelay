@@ -4,7 +4,6 @@
   "parameters": {
     "azureAdTenantId": {
       "type": "string",
-      // 36 chars length as expected to be a GUID
       "minLength": 36,
       "maxLength": 36,
       "metadata": {
@@ -13,7 +12,6 @@
     },
     "azureAdClientId": {
       "type": "string",
-      // 36 chars length as expected to be a GUID
       "minLength": 36,
       "maxLength": 36,
       "metadata": {
@@ -202,7 +200,6 @@
         "displayName": "Website"
       },
       "properties": {
-        //use reference function with resource name if local app service plan for implicit dependency as conditional dependsOn is not supported
         "serverFarmId": "[if(empty(parameters('hostingPlanResourceGroupName')), resourceId('Microsoft.Web/serverfarms', reference(parameters('hostingPlanName')).name), variables('hostingPlanResourceId'))]",
         "siteConfig": {
           "alwaysOn": true,
@@ -226,7 +223,6 @@
           "properties": {
             "WEBSITE_RUN_FROM_PACKAGE": "1",
 
-            //use reference function if local app insights for implicit dependency as conditional dependsOn is not supported
             "APPINSIGHTS_INSTRUMENTATIONKEY": "[if(empty(parameters('applicationInsightsKey')), reference(parameters('applicationInsightsName'), '2015-05-01').InstrumentationKey, parameters('applicationInsightsKey'))]",
             "ApplicationInsightsAgent_EXTENSION_VERSION": "~2",
             "XDT_MicrosoftApplicationInsights_Mode": "recommended",
@@ -277,7 +273,6 @@
       "name": "[concat(parameters('hostingPlanName'), '-', resourceGroup().name)]",
       "type": "Microsoft.Insights/autoscalesettings",
       "apiVersion": "2014-04-01",
-      //autoscale settings cannot be defined multiple times for shared app service plan, also Basic plans do not support autoscale
       "condition": "[and(empty(parameters('hostingPlanResourceGroupName')), not(startsWith(parameters('hostingPlanSkuName'), 'b')))]",
       "location": "[resourceGroup().location]",
       "tags": {
@@ -297,7 +292,6 @@
               {
                 "metricTrigger": {
                   "metricName": "CpuPercentage",
-                  //use reference function with resource name if local app service plan for implicit dependency as conditional dependsOn is not supported
                   "metricResourceUri": "[if(empty(parameters('hostingPlanResourceGroupName')), resourceId('Microsoft.Web/serverfarms', reference(parameters('hostingPlanName')).name), variables('hostingPlanResourceId'))]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
@@ -316,7 +310,6 @@
               {
                 "metricTrigger": {
                   "metricName": "CpuPercentage",
-                  //use reference function with resource name if local app service plan for implicit dependency as conditional dependsOn is not supported
                   "metricResourceUri": "[if(empty(parameters('hostingPlanResourceGroupName')), resourceId('Microsoft.Web/serverfarms', reference(parameters('hostingPlanName')).name), variables('hostingPlanResourceId'))]",
                   "timeGrain": "PT1M",
                   "statistic": "Average",
@@ -337,7 +330,6 @@
         ],
         "enabled": false,
         "name": "[concat(parameters('hostingPlanName'), '-', resourceGroup().name)]",
-        //use reference function with resource name if local app service plan for implicit dependency as conditional dependsOn is not supported
         "targetResourceUri": "[if(empty(parameters('hostingPlanResourceGroupName')), resourceId('Microsoft.Web/serverfarms', reference(parameters('hostingPlanName')).name), variables('hostingPlanResourceId'))]"
       }
     },
