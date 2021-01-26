@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Distech.CloudRelay.API.Options
+﻿namespace Distech.CloudRelay.API.Options
 {
     /// <summary>
     /// Represents the options to configure the Azure IotHub adapter.

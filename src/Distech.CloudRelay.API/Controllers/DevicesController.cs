@@ -3,9 +3,7 @@ using Distech.CloudRelay.API.Services;
 using Distech.CloudRelay.Common.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Distech.CloudRelay.API.Controllers
@@ -26,6 +24,7 @@ namespace Distech.CloudRelay.API.Controllers
 
         private readonly IDeviceService m_DeviceService;
         private readonly IFileService m_FileService;
+        private readonly ITelemetryService m_TelemetryService;
 
         #endregion
 
@@ -36,10 +35,12 @@ namespace Distech.CloudRelay.API.Controllers
         /// </summary>
         /// <param name="deviceService"></param>
         /// <param name="fileService"></param>
-        public DevicesController(IDeviceService deviceService, IFileService fileService)
+        /// <param name="telemetryService"></param>
+        public DevicesController(IDeviceService deviceService, IFileService fileService, ITelemetryService telemetryService)
         {
             m_DeviceService = deviceService;
             m_FileService = fileService;
+            m_TelemetryService = telemetryService;
         }
 
         #endregion
@@ -120,11 +121,15 @@ namespace Distech.CloudRelay.API.Controllers
         [NonAction]
         private async Task<IActionResult> SendDeviceRequestAsync(string deviceId)
         {
-            var request = await m_DeviceService.CreateRequestAsync(deviceId, this.Request); 
-            var response = await m_DeviceService.InvokeRequestAsync(deviceId, request);
-
             IActionResult result = null;
 
+            await m_TelemetryService.IncrementCounterAsync("senddevicerequest", new string[] { });
+
+            var request = await m_TelemetryService.StartTimerAsync(() => m_DeviceService.CreateRequestAsync(deviceId, this.Request), "create_request", new string[] {  });
+
+            var response = await m_TelemetryService.StartTimerAsync(() => m_DeviceService.InvokeRequestAsync(deviceId, request), "invoke_request", new string[] {  });
+
+                
             switch (response)
             {
                 case DeviceInlineResponse inlineResponse:
@@ -137,7 +142,7 @@ namespace Distech.CloudRelay.API.Controllers
                     break;
 
                 case DeviceFileResponse fileResponse:
-                    result = File(await m_FileService.OpenFileAsync(deviceId, fileResponse.BlobUrl), response.Headers.ContentType);
+                    result = File(await m_TelemetryService.StartTimerAsync(() => m_FileService.OpenFileAsync(deviceId, fileResponse.BlobUrl), "blob_storage.read_file", new string[] { }), response.Headers.ContentType);
                     break;
 
                 default:
@@ -146,7 +151,7 @@ namespace Distech.CloudRelay.API.Controllers
 
             // set headers that are not handled by the IActionResult implementation
             this.Response.SetHeadersFromDeviceResponse(response.Headers);
-
+            m_TelemetryService.Dispose();
             return result;
         }
 

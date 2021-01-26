@@ -6,10 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Distech.CloudRelay.API.Services
@@ -22,6 +19,7 @@ namespace Distech.CloudRelay.API.Services
         private readonly IDeviceCommunicationAdapter m_DeviceCommunicationAdapter;
         private readonly IFileService m_FileService;
         private readonly ILogger<DeviceService> m_Logger;
+        private readonly ITelemetryService m_TelemetryService;
 
         #endregion
 
@@ -33,11 +31,13 @@ namespace Distech.CloudRelay.API.Services
         /// <param name="deviceCommunicationAdapter"></param>
         /// <param name="fileService"></param>
         /// <param name="logger"></param>
-        public DeviceService(IDeviceCommunicationAdapter deviceCommunicationAdapter, IFileService fileService, ILogger<DeviceService> logger)
+        /// <param name="telemetryService"></param>
+        public DeviceService(IDeviceCommunicationAdapter deviceCommunicationAdapter, IFileService fileService, ILogger<DeviceService> logger, ITelemetryService telemetryService)
         {
             m_DeviceCommunicationAdapter = deviceCommunicationAdapter;
             m_FileService = fileService;
             m_Logger = logger;
+            m_TelemetryService = telemetryService;
         }
 
         #endregion
@@ -62,8 +62,11 @@ namespace Distech.CloudRelay.API.Services
             if (request.HasFormContentType || request.ContentLength.GetValueOrDefault() > m_DeviceCommunicationAdapter.GetMaximumMessageSize())
             {
                 var fileData = new BlobStreamDecorator(request.Body) { ContentType = request.ContentType };
-                string blobSasUrl = await m_FileService.WriteFileAsync(deviceId, fileData);
+                var blobSasUrl = string.Empty;
 
+                await m_TelemetryService.IncrementCounterAsync("blob_upload", new string[] { });
+                blobSasUrl = await m_TelemetryService.StartTimerAsync(() => m_FileService.WriteFileAsync(deviceId, fileData), "blob_upload", new string[] { });
+                m_TelemetryService.Dispose();
                 return new DeviceFileRequest(request)
                 {
                     BlobUrl = blobSasUrl
@@ -97,7 +100,11 @@ namespace Distech.CloudRelay.API.Services
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             });
 
-            InvocationResult result = await m_DeviceCommunicationAdapter.InvokeCommandAsync(deviceId, payload);
+            var result = default(InvocationResult);
+            
+            await m_TelemetryService.IncrementCounterAsync("direct_method", new string[] { });
+            result = await m_TelemetryService.StartTimerAsync(() => m_DeviceCommunicationAdapter.InvokeCommandAsync(deviceId, payload), "direct_method", new string[] { });
+            m_TelemetryService.Dispose();
 
             try
             {
