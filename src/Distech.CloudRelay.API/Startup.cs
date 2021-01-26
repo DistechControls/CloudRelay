@@ -69,6 +69,7 @@ namespace Distech.CloudRelay.API
                 var connectionString = ApiEnvironment.GetConnectionString(ApiEnvironment.ResourceType.IoTHubService, options.Value.EnvironmentId, Configuration);
                 return ServiceClient.CreateFromConnectionString(connectionString);
             });
+            services.AddTransient<ITelemetryService, TelemetryService>();
             services.ConfigureOptions<AzureIotHubAdapterPostConfigureOptions>();
 
             //enables Application Insights telemetry (APPINSIGHTS_INSTRUMENTATIONKEY and ApplicationInsights:InstrumentationKey are supported)
