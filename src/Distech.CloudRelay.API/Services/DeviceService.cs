@@ -105,10 +105,12 @@ namespace Distech.CloudRelay.API.Services
             }
             catch(JsonReaderException ex)
             {
+                m_Logger.LogWarning($"A JsonReaderException occurred: {ex}");
                 throw new InvalidResultException(ErrorCodes.InvalidResult, ErrorMessages.GetInvalidResultMessage(), ex); 
             }
             catch (JsonSerializationException ex)
             {
+                m_Logger.LogWarning($"A JsonSerializationException occurred: {ex}");
                 throw new InvalidResultException(ErrorCodes.InvalidResult, ErrorMessages.GetInvalidResultMessage(), ex);
             }
         }
