@@ -130,7 +130,7 @@ namespace Distech.CloudRelay.API.Controllers
                 case DeviceInlineResponse inlineResponse:
                     result = new ContentResult()
                     {
-                        Content = inlineResponse.Body,
+                        Content = inlineResponse.GetRawBody(), 
                         StatusCode = response.Headers.Status,
                         ContentType = response.Headers.ContentType
                     };
