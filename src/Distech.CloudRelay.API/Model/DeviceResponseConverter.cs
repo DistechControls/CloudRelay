@@ -26,7 +26,7 @@ namespace Distech.CloudRelay.API.Model
         /// <returns></returns>
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(DevicePayload);
+            return objectType == typeof(DeviceResponse);
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Distech.CloudRelay.API.Model
         {
             JObject jObject = JObject.Load(reader);
 
-            DevicePayload response = null;
+            DeviceResponse response = null;
 
             // look for specific tokens throughout the root token collection in order to do a case-insensitive search
             // default to inline body when no blob URL is specified

@@ -88,7 +88,7 @@ namespace Distech.CloudRelay.API.Services
         /// <param name="deviceId"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<DevicePayload> InvokeRequestAsync(string deviceId, DeviceRequest request)
+        public async Task<DeviceResponse> InvokeRequestAsync(string deviceId, DeviceRequest request)
         {
             // no JSON formatting to save as much space as possible
             var payload = JsonConvert.SerializeObject(request, Formatting.None, new JsonSerializerSettings()
@@ -98,10 +98,17 @@ namespace Distech.CloudRelay.API.Services
             });
 
             InvocationResult result = await m_DeviceCommunicationAdapter.InvokeCommandAsync(deviceId, payload);
-
+            
             try
             {
-                return JsonConvert.DeserializeObject<DevicePayload>(result.Content, new DeviceResponseConverter());
+                DeviceResponse response = JsonConvert.DeserializeObject<DeviceResponse>(result.Content, new DeviceResponseConverter());
+
+                // verify whether a status code was received (throwing an exception here is likely to break previous integrations)
+                // 200 OK will be returned to the client if none of the response statuses are set
+                if (response.Status == null && response.Headers?.Status == null)
+                    m_Logger.LogWarning($"Response status not set.");
+
+                return response;
             }
             catch(JsonReaderException ex)
             {

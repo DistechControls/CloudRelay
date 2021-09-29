@@ -11,12 +11,17 @@ namespace Distech.CloudRelay.API.Model
 {
     public static class HttpResponseExtensions
     {
-        public static void SetHeadersFromDeviceResponse(this HttpResponse response, DeviceHeaders headers)
+        /// <summary>
+        /// Sets the client response headers based on the headers received from the device.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="headers"></param>
+        public static void SetHeadersFromDeviceResponse(this HttpResponse response, DeviceResponseHeaders headers)
         {
             // select all headers except Status and ContentType that are handled by the IActionResult implementation
             var headerMembers = headers.GetType().GetMembers().Where(m => m.MemberType == MemberTypes.Property
-                                                                     && m.Name != nameof(DeviceHeaders.Status)
-                                                                     && m.Name != nameof(DeviceHeaders.ContentType));
+                                                                     && m.Name != nameof(DeviceResponseHeaders.Status)
+                                                                     && m.Name != nameof(DeviceResponseHeaders.ContentType));
 
             foreach (var headerMember in headerMembers)
             {

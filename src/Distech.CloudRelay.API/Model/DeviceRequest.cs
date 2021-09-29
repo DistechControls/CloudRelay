@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Distech.CloudRelay.API.Model
 {
-    public abstract class DeviceRequest : DevicePayload
+    public abstract class DeviceRequest
     {
         #region Constants
 
@@ -30,15 +30,25 @@ namespace Distech.CloudRelay.API.Model
         [JsonProperty(Required = Required.Always)]
         public string Method { get; set; }
 
+        /// <summary>
+        /// Gets or sets the headers of the request.
+        /// </summary>
+        [JsonProperty(Required = Required.Always)]
+        public DeviceRequestHeaders Headers { get; set; }
+
         #endregion
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the class.
+        /// </summary>
+        /// <param name="request"></param>
         protected DeviceRequest(HttpRequest request)
         {
             this.Path = request.Headers.Where(h => h.Key.Equals(RemoteQueryHeaderName, StringComparison.OrdinalIgnoreCase)).Select(h => h.Value.ToString()).FirstOrDefault();
             this.Method = request.Method;
-            this.Headers = new DeviceHeaders(request);
+            this.Headers = new DeviceRequestHeaders(request);
         }
 
         #endregion
