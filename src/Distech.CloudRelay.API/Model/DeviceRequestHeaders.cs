@@ -7,19 +7,25 @@ using System.Text;
 
 namespace Distech.CloudRelay.API.Model
 {
-    public class DeviceHeaders
+    public class DeviceRequestHeaders
     {
         #region Properties
 
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public int? Status { get; set; }
-
+        /// <summary>
+        /// Gets or sets the accept header.
+        /// </summary>
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Accept { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content-type header.
+        /// </summary>
         [JsonProperty(PropertyName = HeaderNames.ContentType, NullValueHandling = NullValueHandling.Ignore)]
         public string ContentType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content-disposition header.
+        /// </summary>
         [JsonProperty(PropertyName = HeaderNames.ContentDisposition, NullValueHandling = NullValueHandling.Ignore)]
         public string ContentDisposition { get; set; }
 
@@ -30,7 +36,7 @@ namespace Distech.CloudRelay.API.Model
         /// <summary>
         /// Initializes a new instance of the class.
         /// </summary>
-        public DeviceHeaders()
+        public DeviceRequestHeaders()
         {
         }
 
@@ -38,7 +44,7 @@ namespace Distech.CloudRelay.API.Model
         /// Initializes a new instance of the class.
         /// </summary>
         /// <param name="request"></param>
-        public DeviceHeaders(HttpRequest request)
+        public DeviceRequestHeaders(HttpRequest request)
         {
             Accept = request.GetTypedHeaders().Accept?.Select(a => a.ToString()).Aggregate((accept1, accept2) => $"{accept1}, {accept2}");
             ContentType = request.GetTypedHeaders().ContentType?.ToString();

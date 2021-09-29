@@ -131,13 +131,13 @@ namespace Distech.CloudRelay.API.Controllers
                     result = new ContentResult()
                     {
                         Content = inlineResponse.GetRawBody(), 
-                        StatusCode = response.Headers.Status,
-                        ContentType = response.Headers.ContentType
+                        StatusCode = response.Status ?? response.Headers?.Status,
+                        ContentType = response.Headers?.ContentType
                     };
                     break;
 
                 case DeviceFileResponse fileResponse:
-                    result = File(await m_FileService.OpenFileAsync(deviceId, fileResponse.BlobUrl), response.Headers.ContentType);
+                    result = File(await m_FileService.OpenFileAsync(deviceId, fileResponse.BlobUrl), response.Headers?.ContentType);
                     break;
 
                 default:
@@ -145,7 +145,8 @@ namespace Distech.CloudRelay.API.Controllers
             }
 
             // set headers that are not handled by the IActionResult implementation
-            this.Response.SetHeadersFromDeviceResponse(response.Headers);
+            if (response.Headers != null)
+                this.Response.SetHeadersFromDeviceResponse(response.Headers);
 
             return result;
         }

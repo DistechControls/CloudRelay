@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Distech.CloudRelay.API.Model
 {
-    public class DeviceInlineResponse : DevicePayload
+    public class DeviceInlineResponse : DeviceResponse
     {
         #region Properties
 

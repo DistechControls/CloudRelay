@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,6 +23,6 @@ namespace Distech.CloudRelay.API.Services
         /// <param name="deviceId"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<DevicePayload> InvokeRequestAsync(string deviceId, DeviceRequest request);
+        Task<DeviceResponse> InvokeRequestAsync(string deviceId, DeviceRequest request);
     }
 }
