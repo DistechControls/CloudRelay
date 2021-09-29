@@ -45,7 +45,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, new object())));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedPreferredResponse(StatusCodes.Status200OK, new object())));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
             });
@@ -131,7 +131,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, new object[] { })));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedPreferredResponse(StatusCodes.Status200OK, new object[] { })));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
             });
@@ -615,11 +615,32 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
         #region Helpers
 
-        private string GetMockedResponse(int statusCode, object body)
+        /// <summary>
+        /// Returns a mocked response (ECLYPSE implementation).
+        /// </summary>
+        /// <param name="statusCode"></param>
+        /// <param name="body"></param>
+        /// <returns></returns>
+        private string GetMockedResponse(int statusCode, string body)
         {
             return JsonConvert.SerializeObject(new DeviceInlineResponse()
             {
-                Headers = new DeviceHeaders() { Status = statusCode },
+                Headers = new DeviceResponseHeaders() { Status = statusCode },
+                Body = body
+            });
+        }
+
+        /// <summary>
+        /// Returns a mocked response (preferred implementation).
+        /// </summary>
+        /// <param name="statusCode"></param>
+        /// <param name="body"></param>
+        /// <returns></returns>
+        private string GetMockedPreferredResponse(int statusCode, object body)
+        {
+            return JsonConvert.SerializeObject(new DeviceInlineResponse()
+            {
+                Status = statusCode,
                 Body = body
             });
         }
