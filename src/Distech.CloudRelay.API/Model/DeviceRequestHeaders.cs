@@ -29,6 +29,12 @@ namespace Distech.CloudRelay.API.Model
         [JsonProperty(PropertyName = HeaderNames.ContentDisposition, NullValueHandling = NullValueHandling.Ignore)]
         public string ContentDisposition { get; set; }
 
+        /// <summary>
+        /// Gets or sets the content-length header.
+        /// </summary>
+        [JsonProperty(PropertyName = HeaderNames.ContentLength, NullValueHandling = NullValueHandling.Ignore)]
+        public long? ContentLength { get; set; }
+
         #endregion
 
         #region Constructors
@@ -49,6 +55,7 @@ namespace Distech.CloudRelay.API.Model
             Accept = request.GetTypedHeaders().Accept?.Select(a => a.ToString()).Aggregate((accept1, accept2) => $"{accept1}, {accept2}");
             ContentType = request.GetTypedHeaders().ContentType?.ToString();
             ContentDisposition = request.GetTypedHeaders().ContentDisposition?.ToString();
+            ContentLength = request.ContentLength;
         }
 
         #endregion
