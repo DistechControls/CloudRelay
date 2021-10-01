@@ -54,7 +54,16 @@ namespace Distech.CloudRelay.API.Services
         {
             // discard any body that could have been provided when doing GET or DELETE requests
             if (HttpMethods.IsGet(request.Method) || HttpMethods.IsDelete(request.Method))
-                return new DeviceInlineRequest(request);
+            {
+                var inlineRequest = new DeviceInlineRequest(request);
+
+                // remove any content related headers that could have been part of the request since the body was discarded
+                inlineRequest.Headers.ContentLength = null;
+                inlineRequest.Headers.ContentType = null;
+                inlineRequest.Headers.ContentDisposition = null;
+
+                return inlineRequest;
+            }
 
             // determine whether the request body needs to be written to file storage or sent inline to the device.
             // a more accurate check could be done against the serialized DeviceRequest instead of the current request.ContentLength since additional info is added to the payload later on.
