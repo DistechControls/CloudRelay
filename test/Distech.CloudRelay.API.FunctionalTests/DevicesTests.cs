@@ -45,7 +45,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedPreferredResponse(StatusCodes.Status200OK, new object())));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, new object())));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
             });
@@ -131,7 +131,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedPreferredResponse(StatusCodes.Status200OK, new object[] { })));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, new object[] { })));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
             });
@@ -216,7 +216,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, default(string))));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedLegacyResponse(StatusCodes.Status200OK, default(string))));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
             });
@@ -301,7 +301,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, default(string))));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedLegacyResponse(StatusCodes.Status200OK, default(string))));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
             });
@@ -386,7 +386,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, default(string))));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedLegacyResponse(StatusCodes.Status200OK, default(string))));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
 
@@ -450,7 +450,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, default(string))));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedLegacyResponse(StatusCodes.Status200OK, default(string))));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
 
@@ -519,7 +519,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, default(string))));
+                        .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedLegacyResponse(StatusCodes.Status200OK, default(string))));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
 
@@ -595,7 +595,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
-                        .ReturnsAsync(new InvocationResult(mockStatusCode, GetMockedResponse(mockStatusCode, mockBody)));
+                        .ReturnsAsync(new InvocationResult(mockStatusCode, GetMockedLegacyResponse(mockStatusCode, mockBody)));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
                 });
             });
@@ -621,7 +621,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
         /// <param name="statusCode"></param>
         /// <param name="body"></param>
         /// <returns></returns>
-        private string GetMockedResponse(int statusCode, string body)
+        private string GetMockedLegacyResponse(int statusCode, string body)
         {
             return JsonConvert.SerializeObject(new DeviceInlineResponse()
             {
@@ -636,7 +636,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
         /// <param name="statusCode"></param>
         /// <param name="body"></param>
         /// <returns></returns>
-        private string GetMockedPreferredResponse(int statusCode, object body)
+        private string GetMockedResponse(int statusCode, object body)
         {
             return JsonConvert.SerializeObject(new DeviceInlineResponse()
             {
