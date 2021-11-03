@@ -26,7 +26,7 @@ namespace Distech.CloudRelay.Functions
 
         private readonly IFileService m_FileService;
         private readonly IOptionsSnapshot<BlobCleanupOptions> m_Options;
-        private readonly ILogger m_Logger;
+        private readonly ILogger<FileStorageFunctions> m_Logger;
 
         #endregion
 
