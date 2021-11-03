@@ -142,13 +142,18 @@ namespace Distech.CloudRelay.Common.Services
             m_Logger.LogDebug($"Found '{relayApiBlobs.Count}' blob(s) for device -> relay responses");
             blobs.AddRange(relayApiBlobs);
 
-            //perform clean-up on expired blobs
+            //select expired blobs only
             DateTime expirationDate = DateTime.UtcNow.AddMinutes(-minutesCleanupExpirationDelay);
             Task<bool>[] deleteTasks = blobs.Where(b => b.LastModified < expirationDate)
-                .Select(b => m_BlobRepository.DeleteBlobAsync(b.Path))
-                .ToArray();
-            await Task.WhenAll(deleteTasks);
+                                            .Select(b => m_BlobRepository.DeleteBlobAsync(b.Path))
+                                            .ToArray();
+            m_Logger.LogDebug($"Found '{deleteTasks.Count()}' expired blob(s)");
 
+            //parrallel delete ends up degrading performances when dealing with large amount of blobs (longer latencies and throttling) and could also ends up reaching the host maximum number of outbound connections.
+            //the current implementation does not allow to control the amount of HttpClient created by the CloudBlobClient: https://github.com/Azure/azure-storage-net/issues/580
+            //consider using the Batch client at some point: https://github.com/Azure/azure-sdk-for-net/tree/main/sdk/storage/Azure.Storage.Blobs.Batch
+            await Task.WhenAll(deleteTasks);
+            
             return deleteTasks.Count(t => t.Result);
         }
 
