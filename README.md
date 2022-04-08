@@ -220,6 +220,7 @@ Only a subset of the request headers are actually routed to the device, all othe
 
 - `Accept`
 - `Content-Type`
+- `Content-Length`
 
 The Cloud Relay makes use of OAuth 2.0 Bearer tokens to authenticate/authorize incoming requests. Not providing this token will result in a `401 Unauthorized` error.
 
