@@ -43,10 +43,12 @@ Create the Azure Active Directory application registrations
 
 ```PowerShell
 az ad app create --display-name CloudRelayAPI
-az ad app create --display-name CloudRelayClient --password S0meHardT0GuessPassw0rd
+
+az ad app create --display-name CloudRelayClient
+az ad app credential reset --display-name AzureCliGeneratedPwd --id <appId from the CloudRelayClient output> --append
 ```
 
-Take note of both application registrations `appId` and provided `password`. They will be needed later on.
+Take note of both application registrations `appId` and generated `password`. They will be needed later on.
 
 ### Resources Deployment
 
@@ -233,7 +235,7 @@ POST https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 Host: login.microsoftonline.com
 
-grant_type=client_credentials&client_id={cloudRelayClientAppId}&client_secret=S0meHardT0GuessPassw0rd&scope={cloudRelayApiAppId}/.default
+grant_type=client_credentials&client_id={cloudRelayClientAppId}&client_secret={azureCliGeneratedPwd}&scope={cloudRelayApiAppId}/.default
 ```
 
 Response:
