@@ -67,7 +67,7 @@ Deploy the `Distech.CloudRelay.Gateway.json` file into a resource group that ser
 ```PowerShell
 az group create --name rg-cloudrelaygateway --location "East US"
 
-az group deployment create `
+az deployment group create `
   --handle-extended-json-format `
   --name CloudRelayGatewayDeployment `
   --resource-group rg-cloudrelaygateway `
@@ -89,7 +89,7 @@ Deploy the `Distech.CloudRelay.Compute.json` file into a resource group that ser
 ```PowerShell
 az group create --name rg-cloudrelaycompute --location "East US"
 
-az group deployment create `
+az deployment group create `
   --handle-extended-json-format `
   --name CloudRelayComputeDeployment `
   --resource-group rg-cloudrelaycompute `
