@@ -1,4 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
+﻿using Azure.Storage.Blobs.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -71,7 +71,7 @@ namespace Distech.CloudRelay.Common.DAL
         /// Applies the metadata information to the specified azure storage blob.
         /// </summary>
         /// <param name="blob"></param>
-        public void ApplyTo(CloudBlob blob)
+        public void ApplyTo(BlobUploadOptions blob)
         {
             foreach (var item in m_Metadata)
             {

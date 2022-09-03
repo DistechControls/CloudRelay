@@ -1,8 +1,10 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
+﻿using Azure.Storage.Blobs.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Distech.CloudRelay.Common.DAL
 {
@@ -103,14 +105,34 @@ namespace Distech.CloudRelay.Common.DAL
 
         public override long Position { get => m_Stream.Position; set => m_Stream.Position = value; }
 
+        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            return m_Stream.CopyToAsync(destination, bufferSize, cancellationToken);
+        }
+
         public override void Flush()
         {
             m_Stream.Flush();
         }
 
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return m_Stream.FlushAsync(cancellationToken);
+        }
+
         public override int Read(byte[] buffer, int offset, int count)
         {
             return m_Stream.Read(buffer, offset, count);
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return m_Stream.ReadAsync(buffer, offset, count, cancellationToken);
+        }
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            return m_Stream.ReadAsync(buffer, cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -128,6 +150,16 @@ namespace Distech.CloudRelay.Common.DAL
             m_Stream.Write(buffer, offset, count);
         }
 
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return m_Stream.WriteAsync(buffer, offset, count, cancellationToken);
+        }
+
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            return m_Stream.WriteAsync(buffer, cancellationToken);
+        }
+
         #endregion
 
         #region Azure Blob Support
@@ -136,9 +168,10 @@ namespace Distech.CloudRelay.Common.DAL
         /// Applies the decorator information to the specified <see cref="CloudBlob"/>.
         /// </summary>
         /// <param name="blob"></param>
-        public void ApplyDecoratorTo(CloudBlob blob)
+        public void ApplyDecoratorTo(BlobUploadOptions blob)
         {
-            blob.Properties.ContentType = ContentType;
+            blob.HttpHeaders ??= new BlobHttpHeaders();
+            blob.HttpHeaders.ContentType = ContentType;
             Metadata?.ApplyTo(blob);
         }
 

@@ -9,23 +9,23 @@ using Moq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Distech.CloudRelay.API.FunctionalTests
 {
-    public class DevicesControllerTests : IClassFixture<CloudRelayAPIApplicationFactory<TestStartup>>
+    public class DevicesControllerTests : IClassFixture<CloudRelayAPIApplicationFactory<Program>>
     {
         #region Member Variables
 
-        private readonly CloudRelayAPIApplicationFactory<TestStartup> m_ApiAppFactory;
+        private readonly CloudRelayAPIApplicationFactory<Program> m_ApiAppFactory;
 
         #endregion
 
         #region Constructors
 
-        public DevicesControllerTests(CloudRelayAPIApplicationFactory<TestStartup> apiAppFactory)
+        public DevicesControllerTests(CloudRelayAPIApplicationFactory<Program> apiAppFactory)
         {
             m_ApiAppFactory = apiAppFactory;
         }
@@ -80,8 +80,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
             //Act
             var response = await client.GetAsync($"api/v1/devices/{deviceId}/request");
-            var content = await response.Content.ReadAsStringAsync();
-            ApplicationProblemDetails problem = JsonConvert.DeserializeObject<ApplicationProblemDetails>(content);
+            var problem = await response.Content.ReadFromJsonAsync<ApplicationProblemDetails>();
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -108,8 +107,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
             //Act
             var response = await client.GetAsync($"api/v1/devices/{deviceId}/request?environmentId=someId");
-            var content = await response.Content.ReadAsStringAsync();
-            ApplicationProblemDetails problem = JsonConvert.DeserializeObject<ApplicationProblemDetails>(content);
+            var problem = await response.Content.ReadFromJsonAsync<ApplicationProblemDetails>();
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -130,6 +128,8 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 builder.ConfigureTestServices(services =>
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
+                    stubAdapter.Setup(a => a.GetMaximumMessageSize())
+                        .Returns(int.MaxValue);
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
                         .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedResponse(StatusCodes.Status200OK, new object[] { })));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
@@ -155,6 +155,8 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 builder.ConfigureTestServices(services =>
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
+                    stubAdapter.Setup(a => a.GetMaximumMessageSize())
+                        .Returns(int.MaxValue);
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
                         .ThrowsAsync(new IdNotFoundException(ErrorCodes.DeviceNotFound, deviceId));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
@@ -165,8 +167,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
             //Act
             var response = await client.PostAsJsonAsync($"api/v1/devices/{deviceId}/request", default(string));
-            var content = await response.Content.ReadAsStringAsync();
-            ApplicationProblemDetails problem = JsonConvert.DeserializeObject<ApplicationProblemDetails>(content);
+            var problem = await response.Content.ReadFromJsonAsync<ApplicationProblemDetails>();
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -193,8 +194,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
             //Act
             var response = await client.PostAsJsonAsync($"api/v1/devices/{deviceId}/request?environmentId=someId", default(string));
-            var content = await response.Content.ReadAsStringAsync();
-            ApplicationProblemDetails problem = JsonConvert.DeserializeObject<ApplicationProblemDetails>(content);
+            var problem = await response.Content.ReadFromJsonAsync<ApplicationProblemDetails>();
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -215,6 +215,8 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 builder.ConfigureTestServices(services =>
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
+                    stubAdapter.Setup(a => a.GetMaximumMessageSize())
+                        .Returns(int.MaxValue);
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
                         .ReturnsAsync(new InvocationResult(StatusCodes.Status200OK, GetMockedLegacyResponse(StatusCodes.Status200OK, default(string))));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
@@ -240,6 +242,8 @@ namespace Distech.CloudRelay.API.FunctionalTests
                 builder.ConfigureTestServices(services =>
                 {
                     var stubAdapter = new Mock<IDeviceCommunicationAdapter>();
+                    stubAdapter.Setup(a => a.GetMaximumMessageSize())
+                        .Returns(int.MaxValue);
                     stubAdapter.Setup(a => a.InvokeCommandAsync(deviceId, It.IsAny<string>()))
                         .ThrowsAsync(new IdNotFoundException(ErrorCodes.DeviceNotFound, deviceId));
                     services.AddScoped<IDeviceCommunicationAdapter>(_ => stubAdapter.Object);
@@ -250,8 +254,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
             //Act
             var response = await client.PutAsJsonAsync($"api/v1/devices/{deviceId}/request", default(string));
-            var content = await response.Content.ReadAsStringAsync();
-            ApplicationProblemDetails problem = JsonConvert.DeserializeObject<ApplicationProblemDetails>(content);
+            var problem = await response.Content.ReadFromJsonAsync<ApplicationProblemDetails>();
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -278,8 +281,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
             //Act
             var response = await client.PutAsJsonAsync($"api/v1/devices/{deviceId}/request?environmentId=someId", default(string));
-            var content = await response.Content.ReadAsStringAsync();
-            ApplicationProblemDetails problem = JsonConvert.DeserializeObject<ApplicationProblemDetails>(content);
+            var problem = await response.Content.ReadFromJsonAsync<ApplicationProblemDetails>();
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -335,8 +337,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
             //Act
             var response = await client.DeleteAsync($"api/v1/devices/{deviceId}/request");
-            var content = await response.Content.ReadAsStringAsync();
-            ApplicationProblemDetails problem = JsonConvert.DeserializeObject<ApplicationProblemDetails>(content);
+            var problem = await response.Content.ReadFromJsonAsync<ApplicationProblemDetails>();
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -363,8 +364,7 @@ namespace Distech.CloudRelay.API.FunctionalTests
 
             //Act
             var response = await client.DeleteAsync($"api/v1/devices/{deviceId}/request?environmentId=someId");
-            var content = await response.Content.ReadAsStringAsync();
-            ApplicationProblemDetails problem = JsonConvert.DeserializeObject<ApplicationProblemDetails>(content);
+            var problem = await response.Content.ReadFromJsonAsync<ApplicationProblemDetails>();
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

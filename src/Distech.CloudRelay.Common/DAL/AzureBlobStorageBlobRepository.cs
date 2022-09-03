@@ -1,15 +1,16 @@
-﻿using Distech.CloudRelay.Common.Exceptions;
+﻿using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
+using Distech.CloudRelay.Common.Exceptions;
 using Distech.CloudRelay.Common.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
-using Microsoft.WindowsAzure.Storage.Blob.Protocol;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Distech.CloudRelay.Common.DAL
@@ -22,7 +23,7 @@ namespace Distech.CloudRelay.Common.DAL
     {
         #region Members
 
-        private readonly Lazy<CloudBlobClient> m_LazyBlobClient;
+        private readonly Lazy<BlobServiceClient> m_LazyBlobServiceClient;
 
         private readonly ILogger<AzureStorageBlobRepository> m_Logger;
 
@@ -37,10 +38,17 @@ namespace Distech.CloudRelay.Common.DAL
         /// <param name="logger"></param>
         public AzureStorageBlobRepository(IOptionsSnapshot<AzureStorageAccountOptions> options, ILogger<AzureStorageBlobRepository> logger)
         {
-            m_LazyBlobClient = new Lazy<CloudBlobClient>(() =>
+            //Note: Continues to rely on injecting options and creating client locally instead of relying on Microsoft.Azure.Extension
+            // to rely on DI instead of BlobServiceClient.
+            // Why: such clients are registered as Singleton by default, which is not compatible with current IOptions implementation
+            // reying on HttpContext to resolve proper storage account/connection strings based on environment associated to request/tenant.
+            // We end-up having a singleton instance (the client) having a depencency on IOptionsShapshot, which needs
+            // to remain scoped. Even if it worked, only the first connection string will be accounted for...
+            // In that case we need to discover the supported storage accounts ahead of time on API side to register any possible client
+            // instances as named instance and rely on some sort of locator/scoped instance instead on the service side.
+            m_LazyBlobServiceClient = new Lazy<BlobServiceClient>(() =>
             {
-                CloudStorageAccount account = CloudStorageAccount.Parse(options.Value.ConnectionString);
-                return account.CreateCloudBlobClient();
+                return new BlobServiceClient(options.Value.ConnectionString);
             });
             m_Logger = logger;
         }
@@ -57,14 +65,16 @@ namespace Distech.CloudRelay.Common.DAL
         public async Task<BlobInfo> GetBlobInfoAsync(string blobPath)
         {
             BlobInfo result = null;
+            BlobClient blob = GetBlobClient(blobPath);
 
-            CloudBlobClient blobClient = m_LazyBlobClient.Value;
-            CloudBlob blob = new CloudBlob(GetAbsoluteBlobUri(blobPath), blobClient.Credentials);
-
-            //`ExistsAsync` also refreshes properties and metadata at the same times
-            if (await blob.ExistsAsync())
+            try
             {
-                result = AzureBlob.FromBlobProperties(GetBlobPath(blob), blob.Properties, blob.Metadata);
+                var properties = await blob.GetPropertiesAsync();
+                result = AzureBlob.FromBlobProperties(GetBlobPath(blob), properties);
+            }
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound || ex.ErrorCode == BlobErrorCode.ContainerNotFound)
+            {
+                //swallow does not exist error and return default null instead (as previous behavior before dotnet6 migration)
             }
 
             return result;
@@ -84,28 +94,21 @@ namespace Distech.CloudRelay.Common.DAL
                 throw new ArgumentException(nameof(blobPathPrefix));
             }
 
-            CloudBlobClient blobClient = m_LazyBlobClient.Value;
-            BlobContinuationToken continuationToken = null;
+            BlobContainerClient containerClient = GetContainerClient(blobPathPrefix);
+            List<BlobInfo> result = new();
 
-            //pad prefix path for container only with trailing slash '/', otherwise storage SDK list in $root container only
-            if (!prefix.Contains('/'))
-            {
-                prefix += '/';
-            }
-
-            var result = new List<BlobInfo>();
+            //resolve any virtual folder prefix remaining without container info
+            prefix = Regex.Replace(blobPathPrefix, $"^[/]?{containerClient.Name}", string.Empty);
 
             try
             {
-                do
+                var segment = containerClient.GetBlobsAsync(prefix: prefix, traits: BlobTraits.Metadata).AsPages();
+                await foreach (Page<BlobItem> blobPage in segment)
                 {
-                    BlobResultSegment segment = await blobClient.ListBlobsSegmentedAsync(prefix, true, BlobListingDetails.Metadata, null, continuationToken, null, null);
-                    continuationToken = segment.ContinuationToken;
-
-                    result.AddRange(segment.Results.Cast<CloudBlob>().Select(b => AzureBlob.FromBlobProperties(GetBlobPath(b), b.Properties, b.Metadata)));
-                } while (continuationToken != null);
+                    result.AddRange(blobPage.Values.Select(b => AzureBlob.FromBlobItem(GetBlobPath(containerClient, b), b)));
+                }
             }
-            catch (StorageException ex) when (ex.RequestInformation.ErrorCode == BlobErrorCodeStrings.ContainerNotFound)
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.ContainerNotFound)
             {
                 //swallow container not found and let the default return the currently empty list instead
             }
@@ -121,21 +124,21 @@ namespace Distech.CloudRelay.Common.DAL
         /// <returns></returns>
         public async Task<BlobStreamDecorator> OpenBlobAsync(string blobPath)
         {
-            CloudBlobClient blobClient = m_LazyBlobClient.Value;
-            CloudBlob blob = new CloudBlob(GetAbsoluteBlobUri(blobPath), blobClient.Credentials);
+            BlobClient blob = GetBlobClient(blobPath);
 
             try
             {
+                BlobProperties properties = await blob.GetPropertiesAsync();
                 //blob properties and metadata are automatically fetched when opening the blob stream
                 Stream blobStream = await blob.OpenReadAsync();
-                BlobInfo blobInfo = AzureBlob.FromBlobProperties(GetBlobPath(blob), blob.Properties, blob.Metadata);
+                BlobInfo blobInfo = AzureBlob.FromBlobProperties(GetBlobPath(blob), properties);
                 return new BlobStreamDecorator(blobStream, blobInfo);
             }
-            catch (StorageException ex) when (ex.RequestInformation.ErrorCode == BlobErrorCodeStrings.BlobNotFound || ex.RequestInformation.ErrorCode == BlobErrorCodeStrings.ContainerNotFound)
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound || ex.ErrorCode == BlobErrorCode.ContainerNotFound)
             {
-                if (ex.RequestInformation.ErrorCode == BlobErrorCodeStrings.ContainerNotFound)
+                if (ex.ErrorCode == BlobErrorCode.ContainerNotFound)
                 {
-                    m_Logger.LogWarning($"Container '{blob.Container.Name}' does not exist");
+                    m_Logger.LogWarning($"Container '{blob.BlobContainerName}' does not exist");
                 }
 
                 throw new IdNotFoundException(ErrorCodes.BlobNotFound, blobPath);
@@ -152,25 +155,23 @@ namespace Distech.CloudRelay.Common.DAL
         /// <returns></returns>
         public async Task WriteBlobAsync(string blobPath, BlobStreamDecorator data, bool overwrite = false)
         {
-            CloudBlobClient blobClient = m_LazyBlobClient.Value;
-            CloudBlockBlob blockBlob = new CloudBlockBlob(GetAbsoluteBlobUri(blobPath), blobClient.Credentials);
+            BlobClient blob = GetBlobClient(blobPath);
 
             try
             {
                 //associate metadata to the blob, which will be saved by the next upload operation
-                data.ApplyDecoratorTo(blockBlob);
+                BlobUploadOptions options = new();
+                data.ApplyDecoratorTo(options);
 
-                //use IfNotExistsCondition by default to avoid overriding an existing blob without knowing about it
                 //access condition to ensure blob does not exist yet to catch concurrency issues
-                AccessCondition condition = null;
                 if (!overwrite)
                 {
-                    condition = AccessCondition.GenerateIfNotExistsCondition();
+                    options.Conditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
                 }
 
-                await blockBlob.UploadFromStreamAsync(data, condition, null, null);
+                await blob.UploadAsync(data, options);
             }
-            catch (StorageException ex) when (ex.RequestInformation.ErrorCode == BlobErrorCodeStrings.BlobAlreadyExists)
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobAlreadyExists)
             {
                 //blob already exists, overwriting is currently not implemented => concurrency error on the client side
                 throw new ConflictException(ErrorCodes.BlobAlreadyExists);
@@ -184,15 +185,14 @@ namespace Distech.CloudRelay.Common.DAL
         /// <returns>Returns true if the blob has been deleted or false if the blob did not exist.</returns>
         public async Task<bool> DeleteBlobAsync(string blobPath)
         {
-            CloudBlobClient blobClient = m_LazyBlobClient.Value;
-            var blob = new CloudBlob(GetAbsoluteBlobUri(blobPath), blobClient.Credentials);
+            BlobClient blob = GetBlobClient(blobPath);
 
             try
             {
                 await blob.DeleteAsync();
                 return true;
             }
-            catch (StorageException ex) when (ex.RequestInformation.ErrorCode == BlobErrorCodeStrings.BlobNotFound)
+            catch (RequestFailedException ex) when (ex.ErrorCode == BlobErrorCode.BlobNotFound)
             {
                 //swallow blob not found to ease delete operations
                 return false;
@@ -208,21 +208,53 @@ namespace Distech.CloudRelay.Common.DAL
         /// <returns></returns>
         public async Task<string> GetDelegatedReadAccessAsync(string blobPath, int secondsAccessExipiryDelay)
         {
-            CloudBlobClient blobClient = m_LazyBlobClient.Value;
-            CloudBlob blob = new CloudBlob(GetAbsoluteBlobUri(blobPath), blobClient.Credentials);
+            BlobClient blob = GetBlobClient(blobPath);
 
             if (!await blob.ExistsAsync())
             {
                 throw new IdNotFoundException(ErrorCodes.BlobNotFound, blobPath);
             }
 
-            string sas = blob.GetSharedAccessSignature(new SharedAccessBlobPolicy()
-            {
-                Permissions = SharedAccessBlobPermissions.Read,
-                SharedAccessExpiryTime = DateTimeOffset.Now.AddSeconds(secondsAccessExipiryDelay)
-            });
+            Uri sasUri = blob.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddSeconds(secondsAccessExipiryDelay));
+            return sasUri.ToString();
+        }
 
-            return $"{blob.Uri}{sas}";
+        #endregion
+
+        #region Azure Clients
+
+        /// <summary>
+        /// Returns a client to manage the storage container specified in blob path.
+        /// </summary>
+        /// <param name="blobRelativePath"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        private BlobContainerClient GetContainerClient(string blobRelativePath)
+        {
+            var segments = blobRelativePath.TrimStart('/').Split('/', 2);
+            if (segments.Length < 1)
+            {
+                throw new ArgumentException($"Invalid blob path", nameof(blobRelativePath));
+            }
+
+            return m_LazyBlobServiceClient.Value.GetBlobContainerClient(segments[0]);
+        }
+
+        /// <summary>
+        /// Returns a client to manage the storage blob specified in blob path.
+        /// </summary>
+        /// <param name="blobRelativePath"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        private BlobClient GetBlobClient(string blobRelativePath)
+        {
+            var segments = blobRelativePath.TrimStart('/').Split('/', 2);
+            if (segments.Length != 2)
+            {
+                throw new ArgumentException($"Invalid blob path", nameof(blobRelativePath));
+            }
+
+            return m_LazyBlobServiceClient.Value.GetBlobContainerClient(segments[0]).GetBlobClient(segments[1]);
         }
 
         #endregion
@@ -230,26 +262,24 @@ namespace Distech.CloudRelay.Common.DAL
         #region Helpers
 
         /// <summary>
-        /// Returns the aboslute URI for the specified relative blob path.
+        /// Returns the relative path for the specified blob from the blob client base URI.
         /// </summary>
-        /// <param name="blobRelativePath"></param>
+        /// <param name="blob"></param>
         /// <returns></returns>
-        private Uri GetAbsoluteBlobUri(string blobRelativePath)
+        private static string GetBlobPath(BlobClient blob)
         {
-            //blob client abosulte uri contains '/' when using a real storage account, but does not for the emulator
-            //  - Azure storage account: "https://{accountName}.blob.core.windows.net/"
-            //  - Emulator: "http://127.0.0.1:10000/devstoreaccount1"
-            return new Uri($"{m_LazyBlobClient.Value.BaseUri.AbsoluteUri.TrimEnd('/')}/{blobRelativePath.TrimStart('/')}");
+            return $"{blob.BlobContainerName}/{blob.Name}";
         }
 
         /// <summary>
         /// Returns the relative path for the specified blob from the blob client base URI.
         /// </summary>
-        /// <param name="blob"></param>
+        /// <param name="container"></param>
+        /// <param name="item"></param>
         /// <returns></returns>
-        private string GetBlobPath(CloudBlob blob)
+        private static string GetBlobPath(BlobContainerClient container, BlobItem item)
         {
-            return $"{blob.Container.Name}/{blob.Name}";
+            return $"{container.Name}/{item.Name}";
         }
 
         #endregion
