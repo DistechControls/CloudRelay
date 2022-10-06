@@ -31,6 +31,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 if (builder.Environment.IsDevelopment())
 {
+    Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
     //add diagnostics support for the JwtBearer middleware
     builder.Services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, static options =>
     {
