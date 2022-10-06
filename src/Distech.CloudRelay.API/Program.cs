@@ -10,6 +10,8 @@ using Distech.CloudRelay.API.Model;
 using Distech.CloudRelay.API.Options;
 using Distech.CloudRelay.API.Services;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -20,19 +22,22 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Identity.Web;
 using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //inject authentication related entities and services
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection(ApiEnvironment.AzureADOptions));
+#pragma warning disable 0618 //requires breaking changes to replace with Microsoft.Identity.Web
+builder.Services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
+#pragma warning restore 0618
+    .AddAzureADBearer(options => builder.Configuration.Bind(ApiEnvironment.AzureADOptions, options));
 
 if (builder.Environment.IsDevelopment())
 {
     //add diagnostics support for the JwtBearer middleware
-    builder.Services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, static options =>
+#pragma warning disable 0618 //requires breaking changes to replace with Microsoft.Identity.Web
+    builder.Services.PostConfigure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, static options =>
+#pragma warning restore 0618
     {
         options.Events = JwtBearerMiddlewareDiagnostics.Subscribe(options.Events);
     });
