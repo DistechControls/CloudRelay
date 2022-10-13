@@ -16,13 +16,13 @@ namespace Distech.CloudRelay.API.Model
         /// <summary>
         /// Gets or sets the content-type header.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderNames.ContentType)]
+        [JsonProperty(PropertyName = "Content-Type")]
         public string ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the content-disposition header.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderNames.ContentDisposition)]
+        [JsonProperty(PropertyName = "Content-Disposition")]
         public string ContentDisposition { get; set; }
 
         #endregion

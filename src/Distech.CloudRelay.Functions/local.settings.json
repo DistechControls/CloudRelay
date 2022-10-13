@@ -6,6 +6,9 @@
 
     "AzureFunctionsJobHost__Logging__LogLevel__Default": "Debug",
     "AzureFunctionsJobHost__Logging__LogLevel__System": "Information",
-    "AzureFunctionsJobHost__Logging__LogLevel__Microsoft": "Information"
+    "AzureFunctionsJobHost__Logging__LogLevel__Microsoft": "Information",
+    "FileStorage__DeviceFileUploadFolder": "iothub-fileupload",
+    "FileStorage__ServerFileUploadFolder": "cloud-relay-fileupload",
+    "FileStorage__ServerFileUploadSubFolder": "RestApi"
   }
 }

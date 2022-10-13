@@ -20,19 +20,19 @@ namespace Distech.CloudRelay.API.Model
         /// <summary>
         /// Gets or sets the content-type header.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderNames.ContentType, NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "Content-Type", NullValueHandling = NullValueHandling.Ignore)]
         public string ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the content-disposition header.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderNames.ContentDisposition, NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "Content-Disposition", NullValueHandling = NullValueHandling.Ignore)]
         public string ContentDisposition { get; set; }
 
         /// <summary>
         /// Gets or sets the content-length header.
         /// </summary>
-        [JsonProperty(PropertyName = HeaderNames.ContentLength, NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "Content-Length", NullValueHandling = NullValueHandling.Ignore)]
         public long? ContentLength { get; set; }
 
         #endregion
@@ -52,7 +52,10 @@ namespace Distech.CloudRelay.API.Model
         /// <param name="request"></param>
         public DeviceRequestHeaders(HttpRequest request)
         {
-            Accept = request.GetTypedHeaders().Accept?.Select(a => a.ToString()).Aggregate((accept1, accept2) => $"{accept1}, {accept2}");
+            Accept = request.GetTypedHeaders().Accept
+                .Select(a => a.ToString())
+                .DefaultIfEmpty() //aggregate does not support empty sequence
+                .Aggregate((accept1, accept2) => $"{accept1}, {accept2}");
             ContentType = request.GetTypedHeaders().ContentType?.ToString();
             ContentDisposition = request.GetTypedHeaders().ContentDisposition?.ToString();
             ContentLength = request.ContentLength;
