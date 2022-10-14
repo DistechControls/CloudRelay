@@ -206,7 +206,7 @@
         "serverFarmId": "[if(empty(parameters('hostingPlanResourceGroupName')), resourceId('Microsoft.Web/serverfarms', reference(parameters('hostingPlanName')).name), variables('hostingPlanResourceId'))]",
         "siteConfig": {
           "alwaysOn": true,
-          "linuxFxVersion": "[if(equals(reference(variables('hostingPlanResourceId'), '2016-09-01').kind, 'linux'), 'DOTNETCORE|2.1','')]",
+          "linuxFxVersion": "[if(equals(reference(variables('hostingPlanResourceId'), '2016-09-01').kind, 'linux'), 'DOTNET|6.0','')]",
           "ftpsState": "Disabled"
         },
         "httpsOnly": true,
@@ -347,8 +347,8 @@
       "apiVersion": "2018-02-01",
       "location": "[resourceGroup().location]",
       "sku": {
-          "name": "Y1",
-          "tier": "Dynamic"
+        "name": "Y1",
+        "tier": "Dynamic"
       },
       "properties": {}
     },
@@ -365,11 +365,9 @@
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('consumptionHostingPlanName'))]",
         "siteConfig": {
+          "linuxFxVersion": "[if(equals(reference(variables('hostingPlanResourceId'), '2016-09-01').kind, 'linux'), 'DOTNET|6.0','')]",
+          "netFrameworkVersion": "v6.0",
           "appSettings": [
-            {
-              "name": "AzureWebJobsDashboard",
-              "value": "[dc.getStorageAccountConnectionString(parameters('functionAppStorageAccountName'), listKeys(parameters('functionAppStorageAccountName'), '2019-04-01').keys[0].value)]"
-            },
             {
               "name": "AzureWebJobsStorage",
               "value": "[dc.getStorageAccountConnectionString(parameters('functionAppStorageAccountName'), listKeys(parameters('functionAppStorageAccountName'), '2019-04-01').keys[0].value)]"
@@ -388,7 +386,7 @@
             },
             {
               "name": "FUNCTIONS_EXTENSION_VERSION",
-              "value": "~2"
+              "value": "~4"
             },
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
