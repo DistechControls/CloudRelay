@@ -17,6 +17,7 @@ It can also access any other custom devices connected to Azure IoT Hub with the 
 - [Usage](#usage)
 - [Additional Information](#additional-information)
 - [Logging](#logging)
+- [Migrations](#migrations)
 - [License](#license)
 
 ## Requirements
@@ -288,6 +289,33 @@ You can configure the applications multiple categories with their logging verbos
 
 All categories created by the Cloud Relay API asset are prefixed with `Distech.CloudRelay.API`.  
 All categories created by the Cloud Relay Function App asset are prefixed with `Distech.CloudRelay.Functions`.
+
+## Migrations
+
+The next sections contain information and instructions about migration and deployment
+process between Cloud Relay versions.
+
+### v1.0 to v1.1
+
+The migrations from .NET Core 2.1 to .NET 6.0 and from Azure Functions runtime
+2.x to 4.x involved multiple breaking changes. While trying to avoid breaking changes
+at the Cloud Relay itself, several of them resulted in mandatory updates in ARM
+templates we were unable to avoid, especially at the function app level.  
+If you previously deployed your infrastructure using the templates contained in this
+repository, then you will need to re-deploy them according to the instructions contained
+in [Installation - Compute Resources](#compute-resources).  
+If you manually deployed your resources or throught your own templates, then you
+will need to handle the breaking changes accordingly (this list might not be
+exhaustive based on the additional functionalities you might be using):
+- Cloud Relay API
+  - If the API is hosted on a linux app service plan, ensure the runtime stack
+is properly set to .NET 6 (`linuxFxVersion`).
+- Function app
+  - Ensure the function app runtime is properly set to 4.x (`FUNCTIONS_EXTENSION_VERSION`).
+  - On Windows hosting, ensure the targeted .NET framework is set to v6.0 (`netFrameworkVersion`).
+  - On Linux hosting, ensure the runtime stack
+is properly set to .NET 6 (`linuxFxVersion`).
+  - Ensure you are not relying anymore on the deprecated Webjob dashboard (`AzureWebJobsDashboard`).
 
 ## License
 
