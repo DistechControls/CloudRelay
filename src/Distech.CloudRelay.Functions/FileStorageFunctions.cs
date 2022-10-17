@@ -56,7 +56,7 @@ namespace Distech.CloudRelay.Functions
             uint delay = m_Options.Value.MinutesExpirationDelay ?? DefaultMinutesExpirationDelay;
             string expirationDate = DateTime.UtcNow.AddMinutes(-delay).ToString();
             int deleted = await m_FileService.CleanUpFilesAsync(delay);
-            m_Logger.LogInformation($"Cleaned-up '{deleted}' expired blob(s) since {expirationDate}");
+            m_Logger.LogInformation("Cleaned-up '{deleted}' expired blob(s) since {expirationDate}", deleted, expirationDate);
         }
 
         #endregion

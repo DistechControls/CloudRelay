@@ -138,7 +138,7 @@ namespace Distech.CloudRelay.Common.DAL
             {
                 if (ex.ErrorCode == BlobErrorCode.ContainerNotFound)
                 {
-                    m_Logger.LogWarning($"Container '{blob.BlobContainerName}' does not exist");
+                    m_Logger.LogWarning("Container '{BlobContainerName}' does not exist", blob.BlobContainerName);
                 }
 
                 throw new IdNotFoundException(ErrorCodes.BlobNotFound, blobPath);

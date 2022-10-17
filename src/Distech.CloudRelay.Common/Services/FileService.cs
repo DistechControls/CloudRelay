@@ -134,12 +134,12 @@ namespace Distech.CloudRelay.Common.Services
 
             //collect blobs for relay api -> device requests - any blobs in that path have been uploaded for the relay API purpose
             blobs = await m_BlobRepository.ListBlobAsync(options.ServerFileUploadFolder);
-            m_Logger.LogDebug($"Found '{blobs.Count}' blob(s) for relay -> device requests");
+            m_Logger.LogDebug("Found '{blobCount}' blob(s) for relay -> device requests", blobs.Count);
 
             //collect blobs for device -> relay api responses - filter blobs related to relay API context only
             List<BlobInfo> responseBlobs = await m_BlobRepository.ListBlobAsync(options.DeviceFileUploadFolder);
             List<BlobInfo> relayApiBlobs = responseBlobs.Where(b => b.Path.Contains(m_FileStorageOptions.Value.ServerFileUploadSubFolder)).ToList();
-            m_Logger.LogDebug($"Found '{relayApiBlobs.Count}' blob(s) for device -> relay responses");
+            m_Logger.LogDebug("Found '{relayApiBlobsCount}' blob(s) for device -> relay responses", relayApiBlobs.Count);
             blobs.AddRange(relayApiBlobs);
 
             //select expired blobs only
@@ -147,7 +147,7 @@ namespace Distech.CloudRelay.Common.Services
             Task<bool>[] deleteTasks = blobs.Where(b => b.LastModified < expirationDate)
                                             .Select(b => m_BlobRepository.DeleteBlobAsync(b.Path))
                                             .ToArray();
-            m_Logger.LogDebug($"Found '{deleteTasks.Count()}' expired blob(s)");
+            m_Logger.LogDebug("Found '{deleteTasksCount}' expired blob(s)", deleteTasks.Length);
 
             //parrallel delete ends up degrading performances when dealing with large amount of blobs (longer latencies and throttling) and could also ends up reaching the host maximum number of outbound connections.
             //the current implementation does not allow to control the amount of HttpClient created by the CloudBlobClient: https://github.com/Azure/azure-storage-net/issues/580

@@ -110,13 +110,13 @@ namespace Distech.CloudRelay.API.Services
 
                 // thrown when an attempt to communicate with the IoT Hub fails
                 case IotHubCommunicationException ex:
-                    m_Logger.LogWarning($"An IotHubCommunicationException occurred: {ex}");
+                    m_Logger.LogWarning(ex, $"An IotHubCommunicationException occurred");
                     apiException = new CommunicationException(ErrorCodes.CommunicationError, ex.Message, ex);
                     break;
 
                 // thrown when the IoT Hub returns an error code (i.e. device registration is disable which prevent the actual device from establishing a connection)
                 case ServerErrorException ex:
-                    m_Logger.LogWarning($"A ServerErrorException occurred: {ex}");
+                    m_Logger.LogWarning(ex, "A ServerErrorException occurred");
                     apiException = new CommunicationException(ErrorCodes.GatewayError, ErrorMessages.GetGatewayErrorMessage(), ex);
                     break;
 
@@ -133,7 +133,7 @@ namespace Distech.CloudRelay.API.Services
                 // thrown when an error occurs during device client operation (i.e. device doesn't repond within the configured time out)
                 // shall always be kept last
                 case IotHubException ex:
-                    m_Logger.LogWarning($"An IotHubException occurred: {ex}");
+                    m_Logger.LogWarning(ex, "An IotHubException occurred");
                     apiException = new OperationException(ErrorCodes.DeviceOperationError, ErrorMessages.GetOperationErrorMessage(), ex);
                     break;
 

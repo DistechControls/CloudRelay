@@ -115,18 +115,18 @@ namespace Distech.CloudRelay.API.Services
                 // verify whether a status code was received (throwing an exception here is likely to break previous integrations)
                 // 200 OK will be returned to the client if none of the response statuses are set
                 if (response.Status == null && response.Headers?.Status == null)
-                    m_Logger.LogWarning($"Response status not set.");
+                    m_Logger.LogWarning("Response status not set.");
 
                 return response;
             }
             catch(JsonReaderException ex)
             {
-                m_Logger.LogWarning($"A JsonReaderException occurred: {ex}");
+                m_Logger.LogWarning(ex, "A JsonReaderException occurred");
                 throw new InvalidResultException(ErrorCodes.InvalidResult, ErrorMessages.GetInvalidResultMessage(), ex); 
             }
             catch (JsonSerializationException ex)
             {
-                m_Logger.LogWarning($"A JsonSerializationException occurred: {ex}");
+                m_Logger.LogWarning(ex, "A JsonSerializationException occurred");
                 throw new InvalidResultException(ErrorCodes.InvalidResult, ErrorMessages.GetInvalidResultMessage(), ex);
             }
         }

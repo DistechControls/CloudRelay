@@ -183,7 +183,7 @@ namespace Distech.CloudRelay.API.Middleware
             */
 
             // log exception to all registered targets
-            m_Logger.LogError(ex, $"Unhandled exception while executing the request {requestURL}");
+            m_Logger.LogError(ex, "Unhandled exception while executing the request {requestURL}", requestURL);
         }
 
         #endregion
