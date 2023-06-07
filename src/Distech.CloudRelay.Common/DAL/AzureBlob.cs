@@ -35,7 +35,7 @@ namespace Distech.CloudRelay.Common.DAL
             return new AzureBlob
             {
                 Path = blobPath,
-                Checksum = Convert.ToBase64String(blobProperties.ContentHash ?? new byte[0]),
+                Checksum = Convert.ToBase64String(blobProperties.ContentHash ?? Array.Empty<byte>()),
                 ContentType = blobProperties.ContentType,
                 LastModified = blobProperties.LastModified,
                 Length = blobProperties.ContentLength,
@@ -54,7 +54,7 @@ namespace Distech.CloudRelay.Common.DAL
             return new AzureBlob
             {
                 Path = blobPath,
-                Checksum = Convert.ToBase64String(item.Properties.ContentHash ?? new byte[0]),
+                Checksum = Convert.ToBase64String(item.Properties.ContentHash ?? Array.Empty<byte>()),
                 ContentType = item.Properties.ContentType,
                 LastModified = item.Properties.LastModified ?? DateTimeOffset.MinValue,
                 Length = item.Properties.ContentLength ?? -1,
